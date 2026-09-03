@@ -97,6 +97,21 @@ describe('board layout', () => {
     }
   });
 
+  /* A tag sits under its own arrow, but the arrows beside it hang lower, so a full-width tag
+     prints across them. Each tag is clipped to the gap before the next arrow on its right. */
+  it('keeps every jump tag clear of the chevrons beside it', () => {
+    const TAG_H = 22;
+    for (const [id, b] of boards) {
+      for (const j of b.jumps) {
+        for (const c of b.chevrons) {
+          if (c.x + c.w <= j.x || c.x >= j.x + j.w) continue;
+          const clash = c.y < j.y + TAG_H && c.y + c.h > j.y;
+          expect(clash, `${id}: jump tag on ${j.nodeId} runs across a ${c.kind} chevron`).toBe(false);
+        }
+      }
+    }
+  });
+
   /* Badges render in the gutter right of a box, so the board has to reserve that space. */
   it('reserves the badge gutter inside the board width', () => {
     for (const [id, b] of boards) {

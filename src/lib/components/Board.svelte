@@ -16,8 +16,10 @@
 
   /* Boxes wrap to their content, so heights are measured and fed back into the pure layout. */
   let heights = $state<Record<string, number>>({});
+  let stripH = $state(G.STRIP);
   let boxEls: Record<string, HTMLElement | null> = $state({});
-  const board = $derived(layout(pattern, heights));
+  let stripEls: Record<string, HTMLElement | null> = $state({});
+  const board = $derived(layout(pattern, heights, undefined, stripH));
 
   $effect(() => {
     void pattern.patternId;
@@ -30,6 +32,10 @@
       if (heights[n.id] !== h) changed = true;
     }
     if (changed) heights = { ...heights, ...next };
+
+    // Strips are a uniform row, so one measurement covers them all.
+    const anyStrip = Object.values(stripEls).find(Boolean)?.offsetHeight;
+    if (anyStrip && anyStrip !== stripH) stripH = anyStrip;
   });
 
   /* Everything on the path is lit; the rest of the board stays visible but recedes. */
@@ -172,9 +178,11 @@
     {/each}
 
     {#each board.jumps as j, i (j.nodeId + i)}
-      <div class="jump" data-s={chevState(j.nodeId, j.ratings) || 'on'} style="left:{j.x}px; top:{j.y}px">
-        ↓ {nodes[j.targetId].short}
-      </div>
+      <div
+        class="jump" data-s={chevState(j.nodeId, j.ratings) || 'on'}
+        style="left:{j.x}px; top:{j.y}px; max-width:{j.w}px"
+        title="↓ {nodes[j.targetId].short}"
+      >↓ {nodes[j.targetId].short}</div>
     {/each}
   </div>
 </div>
@@ -235,7 +243,7 @@
 
   .chev{
     position:absolute;border:0;padding:0;background:transparent;cursor:pointer;
-    transition:opacity .22s,filter .22s,transform .16s;
+    transition:opacity .22s,filter .22s;
   }
   .chev .fill{
     position:absolute;inset:0;transition:background .16s,box-shadow .16s;
@@ -248,19 +256,19 @@
   .chev[data-k='FN'] .fill{background:var(--fn)}
   .chev[data-k='DN'] .fill{background:var(--dn)}
   .chev[data-k='P'] .fill{background:var(--pain)}
-  .chev:hover:not(:disabled){transform:scale(1.05)}
-  .chev[data-s='on']{transform:scale(1.07);z-index:6}
+  .chev:hover:not(:disabled) .fill{filter:brightness(1.1)}
+  .chev[data-s='on']{z-index:6}
   .chev[data-s='on'][data-k='FN'] .fill{background:var(--fn-hi);box-shadow:0 0 20px 2px rgba(31,170,84,.9)}
   .chev[data-s='on'][data-k='DN'] .fill{background:var(--dn-hi);box-shadow:0 0 20px 2px rgba(239,139,44,.9)}
   .chev[data-s='on'][data-k='P'] .fill{background:var(--pain-hi);box-shadow:0 0 20px 2px rgba(210,35,42,.9)}
-  .chev[data-s='dim']{opacity:.17;filter:grayscale(1);transform:none}
+  .chev[data-s='dim']{opacity:.17;filter:grayscale(1)}
   .chev[data-s='off']{opacity:.55}
   .chev:disabled{cursor:default}
 
   .jump{
     position:absolute;background:#000;color:#fff;font-size:10.5px;font-weight:800;padding:3px 8px;
     white-space:nowrap;z-index:2;transition:opacity .25s,filter .25s;
-    max-width:250px;overflow:hidden;text-overflow:ellipsis;
+    overflow:hidden;text-overflow:ellipsis;
   }
   .jump[data-s='dim']{opacity:.18;filter:grayscale(1)}
   .jump[data-s='on']{background:var(--sel)}

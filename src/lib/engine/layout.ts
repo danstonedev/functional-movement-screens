@@ -8,7 +8,7 @@ export const G = {
   CHEV: 96, // vertical room between one unit and the next
   BADGE: 150, // gutter right of a box for the 'You are here' / rating badge
   SECT: 34, // height of a black region bar
-  STRIP: 35, // height of an outcome strip
+  STRIP: 43, // fallback height of an outcome strip; the real one is measured
   CW: 58, // chevron width
   CGAP: 5,
 } as const;
@@ -64,6 +64,9 @@ export interface Jump {
   ratings: Rating[];
   x: number;
   y: number;
+  /** Room available before the next chevron to the right. The tag is clipped to this so a
+   *  left-lane tag cannot run across the right-aligned arrows beside it. */
+  w: number;
   targetId: string;
 }
 
@@ -78,6 +81,10 @@ export interface Board {
 }
 
 /** Groups that produce a finding become strip cells; a branch that only routes stays an arrow. */
+/** Jump-tag geometry. Kept here so the layout can reason about the space a tag occupies. */
+const JUMP_MAX = 250;
+const JUMP_H = 22;
+
 const stripGroups = (gs: Group[]) => gs.filter((g) => g.branch.finding || !g.branch.next);
 const routeGroups = (gs: Group[]) => gs.filter((g) => g.branch.next && !g.branch.finding);
 
@@ -87,7 +94,14 @@ const routeGroups = (gs: Group[]) => gs.filter((g) => g.branch.next && !g.branch
  * Pure: box heights are measured by the caller and passed in, so the same layout can be
  * unit-tested with synthetic heights. Falls back to `fallbackH` for unmeasured boxes.
  */
-export function layout(p: Pattern, heights: Record<string, number>, fallbackH = 62): Board {
+export function layout(
+  p: Pattern,
+  heights: Record<string, number>,
+  fallbackH = 62,
+  /** Measured strip height. Strips are one uniform row, so a single value covers them all.
+   *  Reserving less than they render puts every chevron below a strip inside it. */
+  stripH = G.STRIP,
+): Board {
   const { partner, isPartner } = pairing(p);
   const nodes = Object.fromEntries(p.nodes.map((n) => [n.id, n]));
   const H = (id: string) => heights[id] ?? fallbackH;
@@ -112,7 +126,7 @@ export function layout(p: Pattern, heights: Record<string, number>, fallbackH = 
       const hasBar = first && node.region !== region;
       if (hasBar) region = node.region;
       const boxH = H(id);
-      const stripH = stripGroups(groups[id]).length ? G.STRIP : 0;
+      const sh = stripGroups(groups[id]).length ? stripH : 0;
       const boxY = y + (hasBar ? G.SECT : 0);
       const u: Unit = {
         id,
@@ -121,10 +135,10 @@ export function layout(p: Pattern, heights: Record<string, number>, fallbackH = 
         unitTop: y,
         boxY,
         boxH,
-        stripH,
+        stripH: sh,
         hasBar,
         region: node.region,
-        bottom: boxY + boxH + stripH,
+        bottom: boxY + boxH + sh,
       };
       units.push(u);
       byId[id] = u;
@@ -205,12 +219,23 @@ export function layout(p: Pattern, heights: Record<string, number>, fallbackH = 
       if (!reaches) {
         jumps.push({
           nodeId: n.id, ratings: g.ratings,
-          x: firstX, y: bot + 5, targetId: g.branch.next as string,
+          x: firstX, y: bot + 5, w: JUMP_MAX, targetId: g.branch.next as string,
         });
       }
     }
   }
 
-  const height = Math.max(y, ...jumps.map((j) => j.y + 22)) + 40;
+  /* Clip each tag to the gap before the nearest arrow to its right that shares its band. */
+  for (const j of jumps) {
+    let limit = JUMP_MAX;
+    for (const c of chevrons) {
+      if (c.x <= j.x) continue;
+      if (c.y >= j.y + JUMP_H || c.y + c.h <= j.y) continue; // no vertical overlap
+      limit = Math.min(limit, c.x - j.x - 6);
+    }
+    j.w = Math.max(limit, 64);
+  }
+
+  const height = Math.max(y, ...jumps.map((j) => j.y + JUMP_H)) + 40;
   return { units, byId, strips, chevrons, jumps, width: maxX + G.BADGE, height };
 }
