@@ -201,14 +201,15 @@
   }
   .box .m i.assist{background:#000;color:#fff}
   .box .m u{text-decoration:none;font-size:11px;font-weight:600;color:var(--ink-2)}
-  .box .now{
-    position:absolute;top:-14px;left:-3px;font-weight:900;font-size:10.5px;letter-spacing:.1em;
-    text-transform:uppercase;background:var(--sel);color:#fff;padding:2px 9px;z-index:4;
+  /* A unit can carry a region bar above the box, so a badge straddling the box top lands on
+     that bar. Both badges therefore sit in the gutter to the box's right, and a test is never
+     both current and answered, so they can share one slot. */
+  .box .now,.box .pick{
+    position:absolute;top:9px;left:calc(100% + 8px);white-space:nowrap;z-index:4;
+    font-weight:900;letter-spacing:.09em;color:#fff;padding:3px 9px;
   }
-  .box .pick{
-    position:absolute;top:-14px;right:-3px;font-weight:900;font-size:11.5px;color:#fff;
-    padding:2px 8px;letter-spacing:.05em;z-index:4;
-  }
+  .box .now{background:var(--sel);font-size:10.5px;text-transform:uppercase}
+  .box .pick{font-size:12px;letter-spacing:.05em}
   [data-s='dim']{opacity:.3;filter:grayscale(1)}
   .box[data-s='now']{box-shadow:0 0 0 5px rgba(29,78,216,.32)}
 

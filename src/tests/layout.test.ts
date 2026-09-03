@@ -14,6 +14,8 @@ const overlap = (
 ) => a.x < b.x + b.w - 2 && a.x + a.w > b.x + 2 && a.y < b.y + b.h - 2 && a.y + a.h > b.y + 2;
 
 const boxRect = (u: Board['units'][number]) => ({ x: u.x, y: u.boxY, w: G.W, h: u.boxH });
+/** The whole welded unit: region bar, box and outcome strip. */
+const unitRect = (u: Board['units'][number]) => ({ x: u.x, y: u.unitTop, w: G.W, h: u.bottom - u.unitTop });
 
 describe('board layout', () => {
   it('places every test exactly once', () => {
@@ -64,17 +66,43 @@ describe('board layout', () => {
     }
   });
 
-  it('never runs a chevron through a different test box', () => {
+  it('never runs a chevron through a different unit, bar and strip included', () => {
     for (const [id, b] of boards) {
       for (const c of b.chevrons) {
         for (const u of b.units) {
           if (u.id === c.nodeId || u.id === c.targetId) continue;
           expect(
-            overlap({ x: c.x, y: c.y, w: c.w, h: c.h }, boxRect(u)),
+            overlap({ x: c.x, y: c.y, w: c.w, h: c.h }, unitRect(u)),
             `${id}: ${c.nodeId} ${c.ratings.join('/')} crosses ${u.id}`,
           ).toBe(false);
         }
       }
+    }
+  });
+
+  /* A jump tag hangs under a chevron that stops short. It has to finish before the next unit
+     begins, or it prints on top of that unit's region bar. */
+  it('finishes every jump tag before the next unit starts', () => {
+    const TAG_H = 22;
+    for (const [id, b] of boards) {
+      for (const j of b.jumps) {
+        const from = b.byId[j.nodeId];
+        const nextTop = Math.min(
+          ...b.units.filter((u) => u.unitTop >= from.bottom).map((u) => u.unitTop),
+        );
+        if (!Number.isFinite(nextTop)) continue;
+        expect(j.y + TAG_H, `${id}: jump tag on ${j.nodeId} runs into the next unit`)
+          .toBeLessThanOrEqual(nextTop);
+      }
+    }
+  });
+
+  /* Badges render in the gutter right of a box, so the board has to reserve that space. */
+  it('reserves the badge gutter inside the board width', () => {
+    for (const [id, b] of boards) {
+      const widest = Math.max(...b.units.map((u) => u.x + G.W));
+      expect(b.width, `${id}: board is too narrow for the badge gutter`)
+        .toBeGreaterThanOrEqual(widest + G.BADGE);
     }
   });
 

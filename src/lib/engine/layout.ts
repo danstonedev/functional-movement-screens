@@ -5,7 +5,8 @@ import { chunksOf, groupsOf, kindOf, pairing, type Group } from './graph';
 export const G = {
   W: 322, // test box width
   STAG: 150, // how far an assisted retest shifts right
-  CHEV: 84, // vertical room between one unit and the next
+  CHEV: 96, // vertical room between one unit and the next
+  BADGE: 150, // gutter right of a box for the 'You are here' / rating badge
   SECT: 34, // height of a black region bar
   STRIP: 35, // height of an outcome strip
   CW: 58, // chevron width
@@ -188,7 +189,7 @@ export function layout(p: Pattern, heights: Record<string, number>, fallbackH = 
       const B = byId[g.branch.next as string];
       const reaches = g === straight || B.unitTop === A.bottom + G.CHEV;
       const top = A.bottom;
-      const bot = reaches ? B.unitTop : top + G.CHEV - 18;
+      const bot = reaches ? B.unitTop : top + G.CHEV - 42;
       let cx = g === fnG ? A.x + 26 : sx;
       const firstX = cx;
 
@@ -211,5 +212,5 @@ export function layout(p: Pattern, heights: Record<string, number>, fallbackH = 
   }
 
   const height = Math.max(y, ...jumps.map((j) => j.y + 22)) + 40;
-  return { units, byId, strips, chevrons, jumps, width: maxX + 40, height };
+  return { units, byId, strips, chevrons, jumps, width: maxX + G.BADGE, height };
 }
