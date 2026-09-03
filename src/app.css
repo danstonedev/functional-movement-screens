@@ -1,0 +1,26 @@
+:root{
+  --bg:#eceff3; --card:#fff; --ink:#000; --ink-2:#4a5563; --ink-3:#78838f;
+  --panel:#fff; --line2:#dbe1e8;
+  --fn:#1faa54; --fn-hi:#28c665; --dn:#ef8b2c; --dn-hi:#fb9d43;
+  --pain:#d2232a; --pain-hi:#e83b42; --sel:#1d4ed8;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);overflow:hidden;user-select:none;
+  font-family:Archivo,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+
+.pill{
+  position:fixed;z-index:40;background:var(--panel);border:1px solid var(--line2);
+  border-radius:999px;box-shadow:0 10px 28px -14px rgba(0,0,0,.45);display:flex;align-items:center;
+}
+.card{
+  position:fixed;z-index:40;background:var(--panel);border:1px solid var(--line2);
+  border-radius:14px;box-shadow:0 10px 28px -14px rgba(0,0,0,.45);overflow:hidden;
+}
+.eyebrow{font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.b-FN{background:var(--fn)}.b-DN{background:var(--dn)}.b-FP,.b-DP{background:var(--pain)}
