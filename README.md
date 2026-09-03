@@ -33,6 +33,10 @@ npm run build:single   # one self-contained HTML file, for sharing a preview
 Deployed to GitHub Pages from the default branch:
 <https://danstonedev.github.io/functional-movement-screens/>
 
+**One-time setup:** in repository Settings → Pages, set **Source** to **GitHub Actions**. The
+workflow token is not allowed to create the Pages site itself, so until that switch is flipped
+the deploy fails at `configure-pages` with "Resource not accessible by integration".
+
 Pages serves a project site from `/<repo>/` rather than the root, so `.github/workflows/pages.yml`
 builds with `BASE_PATH=/functional-movement-screens`. Building without it produces a site whose
 assets all 404. Pages also has no SPA rewrite, so `index.html` is copied to `404.html`.

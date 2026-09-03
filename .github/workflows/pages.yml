@@ -29,9 +29,10 @@ jobs:
 
       - run: npm ci
 
+      # Pages must already be enabled with Source = GitHub Actions. The workflow token cannot
+      # create the site itself (`enablement: true` fails with "Resource not accessible by
+      # integration"), so that stays a one-time manual step in repository settings.
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       # A project site lives at /<repo>/, so the app has to be built for that base path.
       - name: Build
