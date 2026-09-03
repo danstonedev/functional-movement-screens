@@ -5,10 +5,15 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
  *  gets published as the shareable preview. A normal build is a regular static site. */
 const inline = !!process.env.INLINE;
 
+/** GitHub Pages serves a project site from /<repo>/, not from the root, so the build needs
+ *  to know its base path. Empty locally and for the inline build. */
+const base = process.env.BASE_PATH ?? '';
+
 /** @type {import('@sveltejs/kit').Config} */
 export default {
   preprocess: vitePreprocess(),
   kit: {
+    paths: { base },
     // Single route, fully client-rendered: an SPA fallback serves it from any path.
     adapter: adapter({ fallback: 'index.html', precompress: false }),
     output: inline ? { bundleStrategy: 'inline' } : {},

@@ -28,6 +28,15 @@ npm run build          # static site -> build/
 npm run build:single   # one self-contained HTML file, for sharing a preview
 ```
 
+## Live site
+
+Deployed to GitHub Pages from the default branch:
+<https://danstonedev.github.io/functional-movement-screens/>
+
+Pages serves a project site from `/<repo>/` rather than the root, so `.github/workflows/pages.yml`
+builds with `BASE_PATH=/functional-movement-screens`. Building without it produces a site whose
+assets all 404. Pages also has no SPA rewrite, so `index.html` is copied to `404.html`.
+
 ## Checks
 
 `.github/workflows/checks.yml` runs on every push and pull request:

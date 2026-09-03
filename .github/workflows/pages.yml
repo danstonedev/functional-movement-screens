@@ -1,0 +1,62 @@
+name: pages
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once, and never cancel one midway.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # Only the default branch is published, whatever it happens to be named.
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # A project site lives at /<repo>/, so the app has to be built for that base path.
+      - name: Build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
+        run: npm run build
+
+      # Pages has no SPA rewrite: any path other than the entry point serves 404.html.
+      # .nojekyll is belt-and-braces — the Actions deploy path does not run Jekyll, but a
+      # branch-based source would, and Jekyll drops directories beginning with an underscore.
+      - name: SPA fallback
+        run: |
+          cp build/index.html build/404.html
+          touch build/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
