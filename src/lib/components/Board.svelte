@@ -16,7 +16,7 @@
 
   /* Boxes wrap to their content, so heights are measured and fed back into the pure layout. */
   let heights = $state<Record<string, number>>({});
-  let stripH = $state(G.STRIP);
+  let stripH = $state<number>(G.STRIP);
   let boxEls: Record<string, HTMLElement | null> = $state({});
   let stripEls: Record<string, HTMLElement | null> = $state({});
   const board = $derived(layout(pattern, heights, undefined, stripH));

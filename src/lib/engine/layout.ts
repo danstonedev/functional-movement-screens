@@ -100,7 +100,7 @@ export function layout(
   fallbackH = 62,
   /** Measured strip height. Strips are one uniform row, so a single value covers them all.
    *  Reserving less than they render puts every chevron below a strip inside it. */
-  stripH = G.STRIP,
+  stripH: number = G.STRIP,
 ): Board {
   const { partner, isPartner } = pairing(p);
   const nodes = Object.fromEntries(p.nodes.map((n) => [n.id, n]));
