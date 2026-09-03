@@ -1,4 +1,4 @@
-# functional-movement-assessment
+# functional-movement-screens
 
 An interactive board for learning the **SFMA breakout process**. Pick a top-tier pattern, tap a
 chevron to rate each test, and watch the path resolve to a conclusion.
