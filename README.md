@@ -28,6 +28,25 @@ npm run build          # static site -> build/
 npm run build:single   # one self-contained HTML file, for sharing a preview
 ```
 
+## Checks
+
+`.github/workflows/checks.yml` runs on every push and pull request:
+
+| Step | Gate |
+|---|---|
+| `npm run check` | svelte-check at **0 errors, 0 warnings** — warnings fail the build, so it stays there |
+| `npm test` | graph and layout invariants |
+| `npm run build` | the static site |
+| `npm run build:single` + `make-preview` | the shareable preview |
+
+The preview build is gated because it has broken twice in ways an ordinary build does not
+catch: client routing on a non-root path, and the title being pulled out of a string literal
+inside the inlined bundle.
+
+`npm audit` reports three low, dev-only advisories reaching `cookie` through `@sveltejs/kit`.
+This is a static SPA with no server, so that parser never runs in production
+(`npm audit --omit=dev` is clean) and CI does not gate on it.
+
 ## How it is put together
 
 | Path | What it is |

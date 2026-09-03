@@ -1,0 +1,47 @@
+name: checks
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# A newer push supersedes an in-flight run on the same ref.
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # svelte-check sits at 0 errors / 0 warnings. Warnings fail the build so it stays there.
+      - name: Types
+        run: npm run check
+
+      # Graph invariants and the pure board layout: no overlapping units, FN owns the left
+      # lane, no chevron crosses a test it does not belong to, jump tags clear the next unit.
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # The shared preview comes from the inline build, and that path has broken twice in ways
+      # an ordinary build does not catch: client routing on a non-root path, and pulling the
+      # page title out of a string literal inside the bundle. Build it and extract it here.
+      - name: Preview build
+        run: |
+          npm run build:single
+          node scripts/make-preview.mjs preview.html
