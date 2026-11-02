@@ -43,7 +43,11 @@ assets all 404. Pages also has no SPA rewrite, so `index.html` is copied to `404
 
 ## Checks
 
-`.github/workflows/checks.yml` runs on every push and pull request:
+Run the checks below locally before merging. Hosted verification in
+`.github/workflows/checks.yml` is manual: in **Actions → checks → Run workflow**,
+select the PR branch and dispatch it when needed. Routine pushes and pull
+requests do not start the checks workflow. The separate Pages workflow still
+publishes pushes to the repository's default branch.
 
 | Step | Gate |
 |---|---|
